@@ -18,9 +18,9 @@ description: |
   registered for the app), auth_method, and strategy_notes (on failure).
 allowed-tools: Bash(python3 *), Bash(curl *)
 arguments: [app_id, audience]
+version: 2.0.0
+author: lpezet@gmail.com
 metadata:
-  version: 2.0.0
-  author: lpezet@gmail.com
   hermes:
     tags: [auth, botcha.ai]
     category: auth
@@ -74,7 +74,7 @@ performed. Record `agent_id` and include it in the Step 4 output block.
 **If `"success": false` with an `error`** → record in `strategy_notes`, fall
 through to **Step 2** (challenge-solving fallback).
 
-**Note on `app_secret`:** After registering the *app* itself via `POST /v1/apps`
+**Note on `app_secret`:** After registering the _app_ itself via `POST /v1/apps`
 on botcha.ai, the response includes an `app_secret` shown only once. Paste it
 into the `app_secret` field of the `$1` section in `config.yaml`. It is the
 recovery anchor for keypair rotation and is not needed for normal operation.
