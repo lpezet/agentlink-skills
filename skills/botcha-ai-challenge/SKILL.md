@@ -45,6 +45,9 @@ Scripts: `${CLAUDE_SKILL_DIR}/scripts/`
    to run the **botcha-ai skill** first. Stop.
 4. This skill always clears the cached token to guarantee a fresh challenge is solved.
    Do not attempt to reuse an existing token.
+5. **Rate limit: 100 challenges per hour per IP.** Never call this skill in a loop or
+   in rapid succession. One call per deliberate reputation-building action. If the script
+   returns `rate_limit_exceeded`, stop immediately and inform the user — do not retry.
 
 ## Background
 
@@ -75,6 +78,8 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/botcha_challenge.py $1 $2
 requires interactive reasoning; suggest using the botcha-ai skill instead. Stop.  
 **If `"success": false`** with `agent_not_registered` or `config_load_failed` → tell
 the user to run the botcha-ai skill first. Stop.  
+**If `"success": false`** with `rate_limit_exceeded` → tell the user the limit of 100
+challenges/hour has been reached for this IP and to try again later. Do not retry. Stop.  
 **If `"success": false`** with any other error → go to **Step 2** (failure output).
 
 ---

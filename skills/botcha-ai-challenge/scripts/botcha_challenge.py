@@ -8,6 +8,8 @@ solved and the resulting verification event is attributed to the registered agen
 
 Usage: python3 botcha_challenge.py <app_id> [audience]
 
+Rate limit: 100 challenges per hour per IP. Do not call in a loop.
+
 Reads agent_id from ~/.config/botcha-ai/config.yml (agent must already be registered
 via the botcha-ai skill). Clears cached access_token/expires_at/token_type before
 requesting the challenge. Saves the resulting token back to config.yml with
@@ -86,12 +88,16 @@ try:
     body = json.loads(r.read())
 
     if not body.get("success"):
+        error = body.get("error", "challenge_fetch_failed")
+        notes = ("Rate limit of 100 challenges/hour/IP reached. Try again later."
+                 if error == "rate_limit_exceeded"
+                 else "Challenge fetch returned success=false.")
         print(json.dumps({
             "success":        False,
             "challenge_type": "unknown",
-            "error":          body.get("error", "challenge_fetch_failed"),
+            "error":          error,
             "raw_challenge":  body,
-            "strategy_notes": "Challenge fetch returned success=false.",
+            "strategy_notes": notes,
         }))
         sys.exit(0)
 

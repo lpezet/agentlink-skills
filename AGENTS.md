@@ -81,6 +81,9 @@ Always clears the cached token and solves a fresh speed/compute challenge with `
 in the verify payload, so the event is explicitly credited to the agent's reputation.
 Reasoning/hybrid challenges are not handled — use `botcha-ai` for those.
 
+**Rate limit: 100 challenges per hour per IP.** Never call this skill in a loop or in
+rapid succession. On a `rate_limit_exceeded` error, stop and inform the user.
+
 ### Challenge verify payloads
 
 All scripts that call `/v1/token/verify` or `/v1/challenges/*/verify` include `"agent_id"`
