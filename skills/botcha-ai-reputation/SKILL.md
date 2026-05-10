@@ -1,26 +1,23 @@
 ---
 name: botcha-ai-reputation
 description: |
-  Manage a Botcha.ai agent's reputation score. Supports three operations:
-    get    — fetch current score (0-1000) and trust tier
-    record — post a reputation event (positive or negative) to grow or signal trust
-    list   — retrieve the agent's event history, optionally filtered by category
+  Read a Botcha.ai agent's reputation score and event history. Supports two operations:
+    get  — fetch current score (0-1000) and trust tier
+    list — retrieve the agent's event history, optionally filtered by category
 
   Prerequisite: the agent must already be registered via the botcha-ai skill
   (identity in ~/.config/botcha-ai/agent.yml and config.yml).
 
   Call with:
     app_id:    <Botcha.ai app ID>           [required]
-    operation: get | record | list          [required]
+    operation: get | list                   [required]
     category:  verification | attestation | delegation |
-               session | violation | endorsement       [required for record; optional filter for list]
-    action:    <action type>                [required for record — see table below]
-    metadata:  <JSON string>               [optional for record]
+               session | violation | endorsement       [optional filter for list]
     limit:     <integer>                   [optional for list]
 
   Returns a JSON block with operation-specific fields — see Step 4.
 allowed-tools: Bash(python3 *)
-arguments: [app_id, operation, category, action, metadata, limit]
+arguments: [app_id, operation, category, limit]
 version: 1.0.0
 author: lpezet@gmail.com
 metadata:
@@ -45,20 +42,18 @@ Scripts: `${CLAUDE_SKILL_DIR}/scripts/`
 
 ---
 
-## Action reference
+## Background
 
-| Category       | Actions                                                              |
-|----------------|----------------------------------------------------------------------|
-| verification   | challenge_solved, challenge_failed, auth_success, auth_failure       |
-| attestation    | attestation_issued, attestation_verified, attestation_revoked        |
-| delegation     | delegation_granted, delegation_received, delegation_revoked          |
-| session        | session_created, session_expired, session_terminated                 |
-| violation      | rate_limit_exceeded, invalid_token, abuse_detected                   |
-| endorsement    | endorsement_received, endorsement_given                              |
+Reputation scores reflect verified behavior — they cannot be self-reported. Events are
+recorded internally by Botcha.ai (e.g. when a challenge is solved or auth succeeds via the
+botcha-ai skill) or by other agents reporting on interactions (endorsements, delegations).
 
-Positive events (raise score): challenge_solved, auth_success, attestation_verified,
-attestation_issued, delegation_granted, delegation_received, session_created,
-endorsement_received, endorsement_given.
+The primary way an agent builds reputation today is through the botcha-ai skill: each
+successful challenge-response or TAP auth contributes `verification` events that raise the
+score. The Botcha.ai whitepaper describes a planned **reputation marketplace** where agents
+will earn reputation across partner networks — today's score is the foundation for that.
+
+When reporting results to the user, briefly explain what the score means in this context.
 
 ---
 
@@ -71,30 +66,6 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/botcha_reputation_get.py $1
 ```
 
 **If `"success": true`** → go to Step 4.  
-**If `"success": false`** with `config_load_failed` → tell the user to run the botcha-ai skill first. Stop.  
-**If `"success": false`** with any other error → go to Step 4 (failure output).
-
----
-
-## Operation: record
-
-Record a reputation event for the agent. Requires `category` and `action` (see table above).
-Optionally accepts a `metadata` JSON string (e.g. `'{"transaction_amount": 42.50}'`).
-
-```bash
-python3 ${CLAUDE_SKILL_DIR}/scripts/botcha_reputation_event.py $1 CATEGORY ACTION
-```
-
-With metadata:
-
-```bash
-python3 ${CLAUDE_SKILL_DIR}/scripts/botcha_reputation_event.py $1 CATEGORY ACTION 'METADATA_JSON'
-```
-
-The script handles authentication internally (TAP first, speed-challenge fallback).
-
-**If `"success": true`** → go to Step 4.  
-**If `"success": false`** with `auth_failed` → report auth failure and stop. Do not retry.  
 **If `"success": false`** with `config_load_failed` → tell the user to run the botcha-ai skill first. Stop.  
 **If `"success": false`** with any other error → go to Step 4 (failure output).
 
@@ -144,17 +115,6 @@ Omit CATEGORY but include LIMIT by passing an empty string: `"" LIMIT`.
 }
 ```
 
-### record (success)
-
-```json
-{
-  "success": true,
-  "operation": "record",
-  "event_id": "evt_...",
-  "score": 375
-}
-```
-
 ### list (success)
 
 ```json
@@ -174,7 +134,7 @@ Omit CATEGORY but include LIMIT by passing an empty string: `"" LIMIT`.
 ```json
 {
   "success": false,
-  "operation": "get|record|list",
+  "operation": "get|list",
   "error": "...",
   "raw_response": "...",
   "strategy_notes": "be specific: what failed and what you tried"
