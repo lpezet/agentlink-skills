@@ -47,7 +47,7 @@ All scripts in `scripts/` follow the same contract:
 
 ## botcha-ai skill family
 
-Three skills share config at `~/.config/botcha-ai/` (both files chmod 600):
+Five skills share config at `~/.config/botcha-ai/` (both files chmod 600):
 
 - `agent.yml` — Ed25519 keypair + `agent_name` / `operator` (shared across all apps)
 - `config.yml` — per-app data keyed by `app_id`:
@@ -57,17 +57,19 @@ Three skills share config at `~/.config/botcha-ai/` (both files chmod 600):
   - `expires_at` — Unix timestamp of token expiry (stored so JWT decoding is never needed)
   - `token_type` — `"tap"` or `"challenge"` (how the cached token was obtained)
 
-### botcha-ai auth precedence
+### botcha-ai-token auth precedence
 
-1. **Force reset** (when `$3 == "force"`) — `botcha_token_clear.py` wipes `access_token`, `expires_at`, `token_type`, and `refresh_token`, then falls through to TAP
-2. **Refresh token** — `POST /v1/token/refresh` if a stored `refresh_token` exists
-3. **TAP** (`botcha_tap_auth.py`) — Ed25519 nonce-sign via `POST /v1/agents/auth` → `POST /v1/agents/auth/verify`
-4. **Challenge fallback** (`botcha_get_token.py`) — speed/compute solved atomically on one HTTPS connection; reasoning/hybrid returns `needs_reasoning: true` for the agent to answer inline via `botcha_verify_reasoning.py`
+1. **Force reset** (when `force` flag set) — clears `access_token`, `expires_at`, `token_type`, and `refresh_token`, then falls through to TAP
+2. **Cached token** — returned immediately if still valid
+3. **Refresh token** — `POST /v1/token/refresh` if a stored `refresh_token` exists
+4. **TAP** (`botcha_tap_auth.py`) — Ed25519 nonce-sign via `POST /v1/agents/auth` → `POST /v1/agents/auth/verify`
+
+Requires a registered agent_id in config (run `/botcha-ai-agent` first).
 
 ### botcha-ai-reputation auth
 
 The reputation scripts (`botcha_reputation_get.py`, `botcha_reputation_events.py`) manage auth
-inline — they do not call into `botcha-ai` scripts. Precedence:
+inline — they do not call into other botcha-ai-* scripts. Precedence:
 
 1. **Cached token** — reused if `expires_at` is more than 60 s away
 2. **TAP** — inline challenge-response using the stored Ed25519 key
@@ -77,9 +79,10 @@ After any fresh auth the token, expiry, and type are written back to `config.yml
 
 ### botcha-ai-challenge
 
-Always clears the cached token and solves a fresh speed/compute challenge with `agent_id`
-in the verify payload, so the event is explicitly credited to the agent's reputation.
-Reasoning/hybrid challenges are not handled — use `botcha-ai` for those.
+Always clears the cached token and solves a fresh challenge with `agent_id` in the verify
+payload, so the event is explicitly credited to the agent's reputation. All challenge types
+are handled: speed and compute are solved automatically; reasoning and hybrid questions are
+answered inline by the LLM via `botcha_verify_reasoning.py`.
 
 **Rate limit: 100 challenges per hour per IP.** Never call this skill in a loop or in
 rapid succession. On a `rate_limit_exceeded` error, stop and inform the user.

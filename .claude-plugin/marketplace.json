@@ -21,12 +21,6 @@
       "skills": "botcha-ai-token"
     },
     {
-      "name": "botcha-ai",
-      "source": "./skills",
-      "strict": false,
-      "skills": "botcha-ai"
-    },
-    {
       "name": "botcha-ai-challenge",
       "source": "./skills",
       "strict": false,

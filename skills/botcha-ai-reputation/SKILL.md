@@ -5,7 +5,7 @@ description: |
     get  — fetch current score (0-1000) and trust tier
     list — retrieve the agent's event history, optionally filtered by category
 
-  Prerequisite: the agent must already be registered via the botcha-ai skill
+  Prerequisite: the agent must already be registered via /botcha-ai-agent
   (identity in ~/.config/botcha-ai/agent.yml and config.yml).
 
   Call with:
@@ -55,12 +55,13 @@ Scripts: `${CLAUDE_SKILL_DIR}/scripts/`
 ## Background
 
 Reputation scores reflect verified behavior — they cannot be self-reported. Events are
-recorded internally by Botcha.ai (e.g. when a challenge is solved or auth succeeds via the
-botcha-ai skill) or by other agents reporting on interactions (endorsements, delegations).
+recorded internally by Botcha.ai (e.g. when a challenge is solved via `botcha-ai-challenge`
+or a TAP auth succeeds via `botcha-ai-token`) or by other agents reporting on interactions
+(endorsements, delegations).
 
-The primary way an agent builds reputation today is through the botcha-ai skill: each
-successful challenge-response or TAP auth contributes `verification` events that raise the
-score. The Botcha.ai whitepaper describes a planned **reputation marketplace** where agents
+The primary way an agent builds reputation today is through `botcha-ai-challenge` and
+`botcha-ai-token`: each successful challenge-response or TAP auth contributes `verification`
+events that raise the score. The Botcha.ai whitepaper describes a planned **reputation marketplace** where agents
 will earn reputation across partner networks — today's score is the foundation for that.
 
 When reporting results to the user, briefly explain what the score means in this context.
