@@ -16,7 +16,7 @@ requesting the challenge. Saves the resulting token back to config.yml with
 token_type="challenge".
 
 Only speed and compute challenges are handled automatically. Reasoning and hybrid
-challenges require interactive input — use the botcha-ai skill for those.
+challenges require interactive input — use /botcha-ai-token for those.
 
 Output JSON fields:
   success          bool
@@ -59,7 +59,7 @@ except Exception as e:
     print(json.dumps({
         "success": False,
         "error": f"config_load_failed: {e}",
-        "strategy_notes": "Run botcha_setup.py (botcha-ai skill) first.",
+        "strategy_notes": "Run /botcha-ai-agent first.",
     }))
     sys.exit(1)
 
@@ -67,7 +67,7 @@ if not AGENT_ID:
     print(json.dumps({
         "success": False,
         "error": "agent_not_registered",
-        "strategy_notes": "No agent_id found for this app. Run the botcha-ai skill first to register.",
+        "strategy_notes": "No agent_id found for this app. Run /botcha-ai-agent first.",
     }))
     sys.exit(1)
 
@@ -153,7 +153,7 @@ try:
             "challenge_type":  ctype,
             "strategy_notes":  (
                 f"Challenge type '{ctype}' requires reasoning answers and cannot be "
-                "solved automatically. Use the botcha-ai skill instead, which guides "
+                "solved automatically. Use /botcha-ai-token instead, which guides "
                 "you through answering reasoning questions."
             ),
         }))

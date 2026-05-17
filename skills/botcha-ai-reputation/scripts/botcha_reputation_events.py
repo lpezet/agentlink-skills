@@ -61,7 +61,7 @@ except Exception as e:
     print(json.dumps({
         "success": False,
         "error": f"config_load_failed: {e}",
-        "hint": "Run botcha_setup.py (botcha-ai skill) first.",
+        "hint": "Run /botcha-ai-agent first.",
     }))
     sys.exit(1)
 
