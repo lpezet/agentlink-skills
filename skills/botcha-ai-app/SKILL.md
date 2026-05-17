@@ -1,5 +1,5 @@
 ---
-name: botcha-ai-setup
+name: botcha-ai-app
 description: |
   Sets up (or retrieves) a Botcha.ai application — the organizational boundary that
   binds a human operator to a set of AI agents, and owns the trust, rate limits,

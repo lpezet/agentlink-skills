@@ -3,6 +3,24 @@
   "owner": { "name": "LP" },
   "plugins": [
     {
+      "name": "botcha-ai-app",
+      "source": "./skills",
+      "strict": false,
+      "skills": "botcha-ai-app"
+    },
+    {
+      "name": "botcha-ai-agent",
+      "source": "./skills",
+      "strict": false,
+      "skills": "botcha-ai-agent"
+    },
+    {
+      "name": "botcha-ai-token",
+      "source": "./skills",
+      "strict": false,
+      "skills": "botcha-ai-token"
+    },
+    {
       "name": "botcha-ai",
       "source": "./skills",
       "strict": false,
