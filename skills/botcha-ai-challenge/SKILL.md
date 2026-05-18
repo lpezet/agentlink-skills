@@ -24,7 +24,7 @@ allowed-tools: Bash(python3 *)
 arguments:
   - app_id
   - audience
-argument-hint: <app_id> [<audience>]
+argument-hint: "<app_id> [<audience>]"
 version: 1.0.0
 author: lpezet@gmail.com
 metadata:

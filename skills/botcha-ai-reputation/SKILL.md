@@ -23,7 +23,7 @@ arguments:
   - operation
   - category
   - limit
-argument-hint: <app_id> <get|list> [<category>] [<limit>]
+argument-hint: "<app_id> <get|list> [<category>] [<limit>]"
 version: 1.0.0
 author: lpezet@gmail.com
 metadata:

@@ -4,6 +4,7 @@ description: |
   Registers (or retrieves) an AI agent identity with a Botcha.ai application.
 
   Requires an app_id (create one first with /botcha-ai-app if needed).
+  If app_id is omitted, defaults to the first app in ~/.config/botcha-ai/config.yml.
 
   If agent_id already exists in ~/.config/botcha-ai/config.yml for the given
   app_id, returns it immediately without any API calls.
@@ -21,7 +22,7 @@ context: fork
 allowed-tools: Bash(python3 *)
 arguments:
   - app_id
-argument-hint: <app_id>
+argument-hint: "[<app_id>]"
 version: 1.0.0
 author: lpezet@gmail.com
 metadata:
@@ -32,7 +33,8 @@ metadata:
 
 Your sole job: ensure this agent has a registered identity for `$app_id` and return it.
 
-Parameter: `$app_id` (required) — the Botcha.ai application ID (`app_...`).
+Parameters: `$app_id` (optional) — the Botcha.ai application ID (`app_...`).
+If omitted, default to the first app in `~/.config/botcha-ai/config.yml`.
 
 Scripts: `${CLAUDE_SKILL_DIR}/scripts/` — Hermes: replace with the path to
 this skill's `scripts/` directory.
@@ -42,6 +44,33 @@ this skill's `scripts/` directory.
 1. **NEVER use curl** for any `/v1/agents/` or `/v1/token/` calls. Use the script only.
 2. **Every** HTTP call to `api.botcha.ai` must include `?app_id=<app_id>` in the URL.
 3. The `private_key_pem` in `agent.yml` is sensitive. Never log or emit it.
+
+---
+
+## Step 0: Resolve app_id
+
+If `$app_id` was not provided, resolve it from config:
+
+```bash
+python3 -c "
+import sys, json
+try:
+    import yaml, pathlib
+    cfg = yaml.safe_load(pathlib.Path('~/.config/botcha-ai/config.yml').expanduser().read_text())
+    apps = list((cfg or {}).get('apps', {}).keys())
+    if not apps:
+        print(json.dumps({'success': False, 'error': 'No apps in ~/.config/botcha-ai/config.yml — run /botcha-ai-app first.'}))
+    else:
+        print(apps[0])
+except FileNotFoundError:
+    print(json.dumps({'success': False, 'error': 'Config not found at ~/.config/botcha-ai/config.yml — run /botcha-ai-app first.'}))
+"
+```
+
+- If the output is a JSON object with `"success": false` → emit it as the failure block and stop.
+- Otherwise the output is the resolved `app_id`. Use it for all subsequent steps.
+
+Always include the resolved `app_id` in the output block, regardless of whether it was passed explicitly or defaulted.
 
 ---
 
@@ -73,7 +102,7 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/botcha_register.py $app_id --agent-name "NAM
 ```json
 {
   "success": true,
-  "app_id": "<app id>",
+  "app_id": "<resolved app_id>",
   "agent_id": "<agent id>",
   "registered": false
 }
